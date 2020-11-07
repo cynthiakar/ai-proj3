@@ -251,7 +251,7 @@ class PrioritizedSweepingValueIterationAgent(AsynchronousValueIterationAgent):
         for s in states:
           if not self.mdp.isTerminal(s):
             max_q_val = max([self.computeQValueFromValues(s, act) for act in self.mdp.getPossibleActions(s)])
-            diff = abs(max_q_val - self.values[s]) 
+            diff = abs(self.values[s] - max_q_val) 
             q.update(s, (-diff))
         
         # For iteration in 0, 1, 2, ..., self.iterations - 1, do:
@@ -272,6 +272,6 @@ class PrioritizedSweepingValueIterationAgent(AsynchronousValueIterationAgent):
             # and the highest Q-value across all possible actions from p
             # diff = abs(self.values[p] - max([self.computeQValueFromValues(p, act) for act in self.mdp.getPossibleActions(p)])) 
             max_q_val = max([self.computeQValueFromValues(p, act) for act in self.mdp.getPossibleActions(p)])
-            diff = abs(max_q_val - self.values[p]) 
+            diff = abs(self.values[p] - max_q_val) 
             if diff > self.theta:
               q.update(p, (-diff))
