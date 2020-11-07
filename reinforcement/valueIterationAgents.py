@@ -63,23 +63,23 @@ class ValueIterationAgent(ValueEstimationAgent):
         # Write value iteration code here
         "*** YOUR CODE HERE ***"
         #a for loop that will run through until the iteration is reached 
-        for n in range(self.iterations):
-            # inital state
-            current_state = self.mdp.getStates()
+        for itera in range(self.iterations):
             # inital counter, which is a dict with default 0
             current_count = util.Counter()
             # for loop to run through the current states
-            for s in current_state:
+            for s in self.mdp.getStates():
                 # set maxNum 
                 maxNum = float("-inf")
-                # loop through the possible actions/path taken in the current state 
-                for path in self.mdp.getPossibleActions(s):
+                # loop through the possible actions/path taken in the current state
+                #initalized actions to getPossibleactions of the states
+                actions = self.mdp.getPossibleActions(s) 
+                for path in actions:
                     # setting the Q value
                     valueQ = self.computeQValueFromValues(s,path)
                     # if maxNum is less that Q value then set maxNum to valueQ 
-                    # else set the current counter of the state tot he maxNum 
                     if( maxNum < valueQ):
                         maxNum = valueQ
+                    # else set the current counter of the state of the maxNum 
                     current_count[s] = maxNum
             # set the current value to current count 
             self.values = current_count
@@ -97,16 +97,14 @@ class ValueIterationAgent(ValueEstimationAgent):
           value function stored in self.values.
         """
         "*** YOUR CODE HERE ***"
-        # set possible path to the mdp.getTransitionStatesAndProbs
-        poss_path = self.mdp.getTransitionStatesAndProbs(state, action)
         # initalize total counter 
         total_counter = 0 
         # loop through the possible path/actions
-        for states, poss in poss_path:
+        for st, poss in self.mdp.getTransitionStatesAndProbs(state, action):
             # value for the reward 
-            reward = self.mdp.getReward(state, action, states)
+            reward = self.mdp.getReward(state, action, st)
             # equation to obtiain the total 
-            total_counter = total_counter + (poss * (reward + self.discount * self.values[states]))
+            total_counter = total_counter + (poss * (reward + self.discount * self.values[st]))
         # return total
         return total_counter 
 
@@ -122,20 +120,25 @@ class ValueIterationAgent(ValueEstimationAgent):
           terminal state, you should return None.
         """
         "*** YOUR CODE HERE ***"
-        # initalize best_path to None
-        best_path = None
+        # initalize best_action to None
+        bestAct = None
+        # initalize the possibleActions of State to action
+        actions = self.mdp.getPossibleActions(state)
         #initalize max value to float("-inf")
         maxNum = float("-inf")
         #loop through the possible paths in the state
-        for path in self.mdp.getPossibleActions(state):
+        for path in actions:
             #obtain the Q value from computeQValueFromValues 
             valueQ = self.computeQValueFromValues(state,path)
-            # if Q value is greater than maxNUm then set maxNUm to valueQ and best_path to path 
-            # else return best_path
+            # if Q value is greater than maxNUm  
             if maxNum < valueQ:
+                #then set maxNUm to valueQ 
                 maxNum = valueQ
-                best_path = path
-        return best_path
+                #and best_action to path
+                bestAct = path
+        # else return best_action
+        return bestAct
+
         util.raiseNotDefined()
 
     def getPolicy(self, state):
@@ -174,18 +177,31 @@ class AsynchronousValueIterationAgent(ValueIterationAgent):
               mdp.isTerminal(state)
         """
         ValueIterationAgent.__init__(self, mdp, discount, iterations)
-#I have to comment this
+
     def runValueIteration(self):
         "*** YOUR CODE HERE ***"
+        #initalize location to the states
         location = self.mdp.getStates()
-        lengthOfPath = len(location)
-        for n in range(self.iterations):
-            position = location[n % lengthOfPath]
+        #compute the length og the states/path
+        lengthOfPath = len(self.mdp.getStates())
+        # for itera in the iterations
+        # obtian the position 
+        for itera in range(self.iterations):
+            #by taking the location value of the mod itera & lengthofpath
+            position = location[itera % lengthOfPath]
+            # if its a non-terminal:
+            # create a values list
             if not self.mdp.isTerminal(position):
                 values = []
-                for path in self.mdp.getPossibleActions(position):
+                # initalize the actions to the the possibleActions(position)
+                actions = self.mdp.getPossibleActions(position)
+                # loop through the possible actions of the position
+                for path in actions:
+                    # compute the qValueFromValues of the position and path
                     valueQ = self.computeQValueFromValues(position,path)
+                    # append to the qvalue to values list
                     values.append(valueQ)
+                # set the max of the values list to the values' position
                 self.values[position] = max(values)
 
 class PrioritizedSweepingValueIterationAgent(AsynchronousValueIterationAgent):
